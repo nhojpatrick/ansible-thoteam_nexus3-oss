@@ -79,11 +79,13 @@
     - nexus-service-stop
 
 - name: Ensure Nexus o/s group exists
+  become: true
   group:
     name: "{{ nexus_os_group }}"
     state: present
 
 - name: Ensure Nexus o/s user exists
+  become: true
   user:
     name: "{{ nexus_os_user }}"
     group: "{{ nexus_os_group }}"
@@ -92,11 +94,13 @@
     state: present
 
 - name: Ensure Nexus installation directory exists
+  become: true
   file:
     path: "{{ nexus_installation_dir }}"
     state: "directory"
 
 - name: Unpack Nexus download
+  become: true
   unarchive:
     src: "{{ nexus_download_dir }}/{{ nexus_package }}"
     dest: "{{ nexus_installation_dir }}"
@@ -107,12 +111,14 @@
     - nexus-service-stop
 
 - name: Ensure proper ownership of nexus installation directory
+  become: true
   file:
     path: "{{ nexus_installation_dir }}/nexus-{{ nexus_version }}"
     recurse: yes
     mode: "u=rwX,g=rX,o=rX"
 
 - name: Update symlink nexus-latest
+  become: true
   file:
     path: "{{ nexus_installation_dir }}/nexus-latest"
     src: "{{ nexus_installation_dir }}/nexus-{{ nexus_version }}"
@@ -179,6 +185,7 @@
   when: nexus_version is version_compare('3.11.0', '>=')
 
 - name: Allow nexus to create first-time install configuration files in  {{ nexus_installation_dir }}/nexus-latest/etc
+  become: true
   file:
     path: "{{ item }}"
     state: "directory"
@@ -194,6 +201,7 @@
     - skip_ansible_lint
 
 - name: Create Nexus data directory
+  become: true
   file:
     path: "{{ nexus_data_dir }}"
     state: "directory"
@@ -201,6 +209,7 @@
     group: "{{ nexus_os_group }}"
 
 - name: Setup Nexus data directory
+  become: true
   lineinfile:
     dest: "{{ nexus_installation_dir }}/nexus-latest/bin/nexus.vmoptions"
     regexp: "^-Dkaraf.data=.*"
@@ -209,6 +218,7 @@
     - nexus-service-stop
 
 - name: Setup JVM logfile directory
+  become: true
   lineinfile:
     dest: "{{ nexus_installation_dir }}/nexus-latest/bin/nexus.vmoptions"
     regexp: "^-XX:LogFile=.*"
@@ -217,6 +227,7 @@
     - nexus-service-stop
 
 - name: Setup Nexus default timezone
+  become: true
   lineinfile:
     dest: "{{ nexus_installation_dir }}/nexus-latest/bin/nexus.vmoptions"
     regexp: "^-Duser.timezone=.*"
@@ -225,6 +236,7 @@
     - nexus-service-stop
 
 - name: Setup Nexus JVM min heap size
+  become: true
   lineinfile:
     dest: "{{ nexus_installation_dir }}/nexus-latest/bin/nexus.vmoptions"
     regexp: "^-Xms.*"
@@ -232,6 +244,7 @@
   notify: nexus-service-stop
 
 - name: Setup Nexus JVM max heap size
+  become: true
   lineinfile:
     dest: "{{ nexus_installation_dir }}/nexus-latest/bin/nexus.vmoptions"
     regexp: "^-Xmx.*"
@@ -239,6 +252,7 @@
   notify: nexus-service-stop
 
 - name: Setup Nexus JVM max direct memory
+  become: true
   lineinfile:
     dest: "{{ nexus_installation_dir }}/nexus-latest/bin/nexus.vmoptions"
     regexp: "^-XX:MaxDirectMemorySize=.*"
@@ -246,6 +260,7 @@
   notify: nexus-service-stop
 
 - name: Stop the admin wizard from running
+  become: true
   lineinfile:
     path: "{{ nexus_default_settings_file }}"
     line: "nexus.onboarding.enabled={{ nexus_onboarding_wizard }}"
@@ -253,6 +268,7 @@
   when: nexus_version is version_compare('3.17.0', '>=')
 
 - name: Create Nexus tmp directory
+  become: true
   file:
     path: "{{ nexus_tmp_dir }}"
     state: "directory"
@@ -260,6 +276,7 @@
     group: "{{ nexus_os_group }}"
 
 - name: Create Nexus backup directory
+  become: true
   file:
     path: "{{ nexus_backup_dir }}"
     state: "directory"
@@ -268,6 +285,7 @@
   when: nexus_backup_dir_create | bool
 
 - name: Setup Nexus tmp directory
+  become: true
   lineinfile:
     dest: "{{ nexus_installation_dir }}/nexus-latest/bin/nexus.vmoptions"
     regexp: "^-Djava.io.tmpdir=.*"
@@ -276,6 +294,7 @@
     - nexus-service-stop
 
 - name: Set NEXUS_HOME for the service user
+  become: true
   lineinfile:
     dest: "{{ nexus_os_user_home_dir }}/.bashrc"
     regexp: "^export NEXUS_HOME=.*"
@@ -284,6 +303,7 @@
     - nexus-service-stop
 
 - name: Set nexus user
+  become: true
   lineinfile:
     dest: "{{ nexus_installation_dir }}/nexus-latest/bin/nexus.rc"
     regexp: ".*run_as_user=.*"
@@ -292,6 +312,7 @@
     - nexus-service-stop
 
 - name: Set nexus port
+  become: true
   lineinfile:
     dest: "{{ nexus_default_settings_file }}"
     regexp: "^application-port=.*"
@@ -300,6 +321,7 @@
     - nexus-service-stop
 
 - name: Set nexus context path
+  become: true
   lineinfile:
     dest: "{{ nexus_default_settings_file }}"
     regexp: "^nexus-context-path=.*"
@@ -308,6 +330,7 @@
     - nexus-service-stop
 
 - name: "Set nexus service listening ip to {{ nexus_application_host }}"
+  become: true
   lineinfile:
     dest: "{{ nexus_default_settings_file }}"
     regexp: "^application-host=.*"
@@ -319,6 +342,7 @@
 # to REST API calls. Once this is done, we will move this to an
 # optionnal setting defaulting to false as recommended by sonatype
 - name: "Enable creating groovy scripts in nexus"
+  become: true
   lineinfile:
     dest: "{{ nexus_default_settings_file }}"
     regexp: "^nexus.scripts.allowCreation=.*"
@@ -328,6 +352,7 @@
   when: nexus_version is version_compare('3.21.2', '>=')
 
 - name: Create systemd service configuration
+  become: true
   template:
     src: "nexus.service"
     dest: "/etc/systemd/system"
@@ -336,6 +361,7 @@
   when: "ansible_service_mgr == 'systemd'"
 
 - name: Create sysv service configuration
+  become: true
   file:
     path: "/etc/init.d/nexus"
     src: "{{ nexus_installation_dir }}/nexus-latest/bin/nexus"
@@ -373,6 +399,7 @@
 - meta: flush_handlers
 
 - name: Enable nexus systemd service and make sure it is started
+  become: true
   systemd:
     name: nexus.service
     enabled: yes
@@ -384,6 +411,7 @@
   when: "ansible_service_mgr == 'systemd'"
 
 - name: Enable nexus sysv service and make sure it is started
+  become: true
   service:
     name: nexus
     enabled: yes
@@ -396,6 +424,7 @@
 - meta: flush_handlers
 
 - name: Chown configuration files from {{ nexus_installation_dir }}/nexus-latest/etc back to root
+  become: true
   file:
     path: "{{ nexus_installation_dir }}/nexus-latest/etc"
     owner: "root"
@@ -408,6 +437,7 @@
     - skip_ansible_lint
 
 - name: Prevent nexus to create any new configuration files in  {{ nexus_installation_dir }}/nexus-latest/etc
+  become: true
   file:
     path: "{{ item }}"
     state: "directory"
@@ -498,6 +528,7 @@
   when: nexus_force_groovy_scripts_registration | default(false)
 
 - name: Create directories to hold current groovy scripts for reference
+  become: true
   file:
     path: "{{ item }}"
     state: directory

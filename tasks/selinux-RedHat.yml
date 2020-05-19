@@ -1,6 +1,7 @@
 ---
 
 - name: Make sure we have the necessary yum packages available for selinux
+  become: true
   yum:
     name:
       - libselinux-python{{ py_suffix }}

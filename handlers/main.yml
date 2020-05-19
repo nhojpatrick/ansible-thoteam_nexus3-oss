@@ -1,10 +1,12 @@
 ---
 - name: systemd-reload
+  become: true
   systemd:
     daemon-reload: yes
     name: nexus.service
 
 - name: nexus systemd service restart
+  become: true
   systemd:
     name: nexus.service
     state: restarted
@@ -13,6 +15,7 @@
   when: "ansible_service_mgr == 'systemd'"
 
 - name: nexus sysv service restart
+  become: true
   service:
     name: nexus
     state: restarted
@@ -20,6 +23,7 @@
   when: "ansible_service_mgr != 'systemd'"
 
 - name: nexus systemd service stop
+  become: true
   systemd:
     name: nexus.service
     state: stopped
@@ -27,6 +31,7 @@
   when: nexus_systemd_service_file.stat.exists
 
 - name: nexus sysv service stop
+  become: true
   service:
     name: nexus
     state: stopped
@@ -48,6 +53,7 @@
   until: wait_for_result is success
 
 - name: httpd-service-reload
+  become: true
   systemd:
     name: "{{ httpd_package_name }}.service"
     state: reloaded
